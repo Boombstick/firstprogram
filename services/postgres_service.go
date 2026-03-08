@@ -1,0 +1,36 @@
+package services
+
+import (
+	"context"
+	"firstprogram/models"
+	"fmt"
+	"strings"
+)
+
+type PostgresService struct {
+	userRepo UserRepository
+}
+
+func NewPostgresService(repository UserRepository) *PostgresService {
+	return &PostgresService{userRepo: repository}
+}
+
+func (s *PostgresService) CreateUser(ctx context.Context, name string, age int) (int64, error) {
+	user := &models.User{
+		Name: name,
+		Age:  age,
+	}
+
+	if strings.TrimSpace(name) == "" {
+		return 0, &ValidationError{Field: "Name", Message: "name не может быть пустым"}
+	}
+	if age <= 0 {
+		return 0, &ValidationError{Field: "Age", Message: "age должен быть больше 0"}
+	}
+	err := s.userRepo.Create(user)
+	if err != nil {
+		return 0, fmt.Errorf("ошибка вставки пользователя: %w", err)
+	}
+
+	return user.Id, nil
+}

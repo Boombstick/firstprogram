@@ -1,0 +1,24 @@
+# .dockerignore — аналог .gitignore, но для Docker.
+# Файлы из этого списка НЕ копируются в контекст сборки.
+# Это ускоряет сборку и уменьшает размер контекста.
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Env-файл (в Docker переменные задаём через environment в compose)
+.env
+
+# Документация
+*.md
+
+# Docker (не нужно копировать compose внутрь образа)
+docker-compose.yml
+Dockerfile
+.dockerignore

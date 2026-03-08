@@ -1,0 +1,20 @@
+# Бинарники
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Env-файлы с секретами
+.env
+.env.docker
+
+# IDE
+.idea/
+.vscode/
+
+# Go
+/vendor/
+
+# Swagger
+/docs/
