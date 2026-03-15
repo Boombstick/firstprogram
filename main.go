@@ -1,16 +1,16 @@
 package main
 
 import (
+	"context"
 	"firstprogram/app"
 	"firstprogram/cache"
 	"firstprogram/config"
+	"firstprogram/database"
 	"firstprogram/repositories"
 	"firstprogram/services"
 	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/go-pg/pg/v10"
 )
 
 // @title        MyService API
@@ -25,21 +25,21 @@ func main() {
 		log.Fatal("Ошибка загрузки файлов конфигурации: ", err)
 	}
 
-	db := pg.Connect(&pg.Options{
-		Addr:     cfg.PostgresHost + ":" + cfg.PostgresPort,
+	db, err := database.NewPostgres(database.PgConfig{
+		Host:     cfg.PostgresHost,
+		Port:     cfg.PostgresPort,
 		User:     cfg.PostgresUser,
 		Password: cfg.PostgresPassword,
-		Database: cfg.PostgresDB})
-	if _, err := db.Exec("SELECT 1"); err != nil {
-		log.Fatal("не удалось подключиться к PostgreSQL: %w", err)
+		Database: cfg.PostgresDB,
+	})
+	if err != nil {
+		log.Fatal(err)
 	}
-	fmt.Println("PostgreSQL: подключено")
 
-	userRepo := repositories.NewUserRepository(db)
-	if err := userRepo.CreateTable(); err != nil {
-		log.Fatal("Ошибка создания таблицы: ", err)
+	userRepo, err := repositories.NewUserRepository(context.Background(), db)
+	if err != nil {
+		log.Fatal(err)
 	}
-	fmt.Println("PostgreSQL: таблица users готова")
 
 	redisCache, err := cache.NewRedisCache(cfg.RedisHost, cfg.RedisPort)
 	if err != nil {

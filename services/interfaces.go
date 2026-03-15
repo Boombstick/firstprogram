@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	Create(user *models.User) error
+	Create(ctx context.Context, user *models.User) error
 }
 
 type Cache interface {

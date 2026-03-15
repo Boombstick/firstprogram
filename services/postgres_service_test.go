@@ -10,11 +10,11 @@ import (
 )
 
 type mockUserRepo struct {
-	createFunc func(user *models.User) error
+	createFunc func(ctx context.Context, user *models.User) error
 }
 
-func (m *mockUserRepo) Create(user *models.User) error {
-	return m.createFunc(user)
+func (m *mockUserRepo) Create(ctx context.Context, user *models.User) error {
+	return m.createFunc(ctx, user)
 }
 
 func TestPostgresService_CreateUser(t *testing.T) {
@@ -77,7 +77,7 @@ func TestPostgresService_CreateUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &mockUserRepo{
-				createFunc: func(user *models.User) error {
+				createFunc: func(ctx context.Context, user *models.User) error {
 					assert.Equal(t, tt.userName, user.Name)
 					assert.Equal(t, tt.userAge, user.Age)
 

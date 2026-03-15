@@ -16,10 +16,6 @@ func NewPostgresService(repository UserRepository) *PostgresService {
 }
 
 func (s *PostgresService) CreateUser(ctx context.Context, name string, age int) (int64, error) {
-	user := &models.User{
-		Name: name,
-		Age:  age,
-	}
 
 	if strings.TrimSpace(name) == "" {
 		return 0, &ValidationError{Field: "Name", Message: "name не может быть пустым"}
@@ -27,7 +23,11 @@ func (s *PostgresService) CreateUser(ctx context.Context, name string, age int) 
 	if age <= 0 {
 		return 0, &ValidationError{Field: "Age", Message: "age должен быть больше 0"}
 	}
-	err := s.userRepo.Create(user)
+	user := &models.User{
+		Name: name,
+		Age:  age,
+	}
+	err := s.userRepo.Create(ctx, user)
 	if err != nil {
 		return 0, fmt.Errorf("ошибка вставки пользователя: %w", err)
 	}
