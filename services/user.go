@@ -5,14 +5,18 @@ import (
 	"firstprogram/models"
 	"fmt"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type UserService struct {
 	userRepo UserRepository
+	logger   *zap.Logger
 }
 
-func NewPostgresService(repository UserRepository) *UserService {
-	return &UserService{userRepo: repository}
+func NewPostgresService(repository UserRepository, logger *zap.Logger) *UserService {
+	return &UserService{userRepo: repository,
+		logger: logger.Named("user_service")}
 }
 
 func (s *UserService) CreateUser(ctx context.Context, name string, age int) (int64, error) {
@@ -29,8 +33,15 @@ func (s *UserService) CreateUser(ctx context.Context, name string, age int) (int
 	}
 	err := s.userRepo.Create(ctx, user)
 	if err != nil {
-		return 0, fmt.Errorf("ошибка вставки пользователя: %w", err)
+		s.logger.Error("ошибка создания пользователя",
+			zap.String("name", name),
+			zap.Int("age", age),
+			zap.Error(err))
+		return 0, fmt.Errorf("ошибка создания пользователя: %w", err)
 	}
-
+	s.logger.Info("пользователь создан",
+		zap.Int64("id", user.Id),
+		zap.String("name", name),
+	)
 	return user.Id, nil
 }

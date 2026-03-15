@@ -7,19 +7,23 @@ import (
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
+	"go.uber.org/zap"
 )
 
 type UserRepository struct {
-	db *pg.DB
+	db     *pg.DB
+	logger *zap.Logger
 }
 
-func NewUserRepository(ctx context.Context, db *pg.DB) (*UserRepository, error) {
+func NewUserRepository(ctx context.Context, db *pg.DB, logger *zap.Logger) (*UserRepository, error) {
+
+	log := logger.Named("user_repository")
 	repo := UserRepository{db: db}
 	err := repo.initDatabaseTables(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Ошибка создания таблицы: %w", err)
 	}
-
+	log.Info("таблица users готова")
 	return &repo, nil
 }
 

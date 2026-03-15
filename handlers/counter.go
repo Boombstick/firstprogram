@@ -19,6 +19,7 @@ type counterIncrResponse struct {
 
 // CounterHandler godoc
 // @Summary  Инкремент значения по ключу
+// @Tags counter
 // @Accept   json
 // @Produce  json
 // @Param    request body     counterIncrRequest  true "Ключ и значение"

@@ -8,13 +8,13 @@ import (
 	"firstprogram/repositories"
 	"firstprogram/router"
 	"firstprogram/services"
-	"fmt"
 	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,6 +23,9 @@ import (
 // @host         localhost:8080
 // @BasePath     /
 func main() {
+
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -35,23 +38,23 @@ func main() {
 		User:     cfg.PostgresUser,
 		Password: cfg.PostgresPassword,
 		Database: cfg.PostgresDB,
-	})
+	}, logger)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("ошибка подключения к PostgreSQL", zap.Error(err))
 	}
 
-	userRepo, err := repositories.NewUserRepository(context.Background(), db)
+	userRepo, err := repositories.NewUserRepository(context.Background(), db, logger)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("ошибка инициализации репозитория", zap.Error(err))
 	}
 
-	redisCache, err := cache.NewRedisCache(cfg.RedisHost, cfg.RedisPort)
+	redisCache, err := cache.NewRedisCache(cfg.RedisHost, cfg.RedisPort, logger)
 	if err != nil {
-		log.Fatal("ошибка подключения к Redis: ", err)
+		logger.Fatal("ошибка подключения к Redis", zap.Error(err))
 	}
 
-	pgService := services.NewPostgresService(userRepo)
-	redisService := services.NewRedisService(redisCache)
+	pgService := services.NewPostgresService(userRepo, logger)
+	redisService := services.NewRedisService(redisCache, logger)
 	router := router.New(pgService, redisService)
 
 	httpHandler := router.SetupRoutes()
@@ -67,18 +70,19 @@ func main() {
 	g, gCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		fmt.Printf("Запуск http сервера на порту %s", cfg.ServerPort)
+		logger.Info("сервер запущен", zap.String("port", cfg.ServerPort))
 		return server.ListenAndServe()
 	})
 
 	g.Go(func() error {
 		<-gCtx.Done()
+		logger.Info("завершение сервера...")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		return server.Shutdown(shutdownCtx)
 	})
 
 	if err := g.Wait(); err != nil {
-		fmt.Printf("exit reason: %s \n", err)
+		logger.Error("сервер остановлен с ошибкой", zap.Error(err))
 	}
 }

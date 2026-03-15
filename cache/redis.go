@@ -5,13 +5,16 @@ import (
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
 type Redis struct {
 	client *redis.Client
+	logger *zap.Logger
 }
 
-func NewRedisCache(host, port string) (*Redis, error) {
+func NewRedisCache(host, port string, logger *zap.Logger) (*Redis, error) {
+	log := logger.Named("redis")
 	client := redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%s", host, port),
 	})
@@ -19,7 +22,9 @@ func NewRedisCache(host, port string) (*Redis, error) {
 	if _, err := client.Ping(context.Background()).Result(); err != nil {
 		return nil, fmt.Errorf("не удалось подключиться к Redis: %w", err)
 	}
-
+	log.Info("подключено",
+		zap.String("host", host),
+		zap.String("port", port))
 	return &Redis{client: client}, nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type mockCache struct {
@@ -72,7 +73,7 @@ func TestRedisService_IncrBy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &mockCache{result: tt.mockResult, err: tt.mockErr}
-			svc := NewRedisService(mock)
+			svc := NewRedisService(mock, zap.NewNop())
 
 			result, err := svc.IncrBy(context.Background(), tt.key, tt.value)
 

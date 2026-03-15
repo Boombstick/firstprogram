@@ -20,6 +20,7 @@ type createUserResponse struct {
 
 // UsersHandler godoc
 // @Summary  Создать пользователя
+// @Tags     users
 // @Accept   json
 // @Produce  json
 // @Param    request body     createUserRequest  true "Имя и возраст"

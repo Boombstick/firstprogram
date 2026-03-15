@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type mockUserRepo struct {
@@ -88,7 +89,7 @@ func TestPostgresService_CreateUser(t *testing.T) {
 				},
 			}
 
-			svc := NewPostgresService(mock)
+			svc := NewPostgresService(mock, zap.NewNop())
 			id, err := svc.CreateUser(context.Background(), tt.userName, tt.userAge)
 
 			if tt.wantErr != "" {
