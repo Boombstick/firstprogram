@@ -1,8 +1,15 @@
 services:
   postgres:
     image: postgres:16-alpine
-    env_file:
-      - .env.docker
+    environment:
+      SERVER_PORT: 8080
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: test
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "5432:5432"
     volumes:

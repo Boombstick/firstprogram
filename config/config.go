@@ -19,13 +19,23 @@ type Config struct {
 
 func Load() (*Config, error) {
 
-	viper.AutomaticEnv()
+	viper.SetDefault("SERVER_PORT", "8080")
+	viper.SetDefault("POSTGRES_HOST", "localhost")
+	viper.SetDefault("POSTGRES_PORT", "5432")
+	viper.SetDefault("POSTGRES_USER", "postgres")
+	viper.SetDefault("POSTGRES_PASSWORD", "postgres")
+	viper.SetDefault("POSTGRES_DB", "postgres1")
+	viper.SetDefault("REDIS_HOST", "localhost")
+	viper.SetDefault("REDIS_PORT", "6379")
 
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("config.cfg")
+	viper.SetConfigType("env")
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("Ошибка чтения .env: %w", err)
-
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, fmt.Errorf("ошибка чтения config.cfg: %w", err)
+		}
 	}
+	viper.AutomaticEnv()
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
