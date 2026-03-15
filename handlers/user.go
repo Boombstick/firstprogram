@@ -18,15 +18,14 @@ type createUserResponse struct {
 	ID int64 `json:"id" example:"1"`
 }
 
-// PostgresUsersHandler godoc
+// UsersHandler godoc
 // @Summary  Создать пользователя
-// @Tags     postgres
 // @Accept   json
 // @Produce  json
 // @Param    request body     createUserRequest  true "Имя и возраст"
 // @Success  200     {object} createUserResponse
-// @Router   /postgres/users [post]
-func PostgresUsersHandler(pgService *services.PostgresService) gin.HandlerFunc {
+// @Router   /users/create [post]
+func CreateUserHandler(userService services.IUserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req createUserRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -34,7 +33,7 @@ func PostgresUsersHandler(pgService *services.PostgresService) gin.HandlerFunc {
 			return
 		}
 
-		id, err := pgService.CreateUser(c.Request.Context(), req.Name, req.Age)
+		id, err := userService.CreateUser(c.Request.Context(), req.Name, req.Age)
 		if err != nil {
 			var validErr *services.ValidationError
 			if errors.As(err, &validErr) {

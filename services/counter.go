@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-type RedisService struct {
+type CounterService struct {
 	cache Cache
 }
 
-func NewRedisService(cache Cache) *RedisService {
-	return &RedisService{cache: cache}
+func NewRedisService(cache Cache) *CounterService {
+	return &CounterService{cache: cache}
 }
 
-func (s *RedisService) IncrBy(ctx context.Context, key string, value int64) (int64, error) {
+func (s *CounterService) IncrBy(ctx context.Context, key string, value int64) (int64, error) {
 
 	if strings.TrimSpace(key) == "" {
 		return 0, &ValidationError{Field: "Key", Message: "key не может быть пустым"}

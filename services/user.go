@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type PostgresService struct {
+type UserService struct {
 	userRepo UserRepository
 }
 
-func NewPostgresService(repository UserRepository) *PostgresService {
-	return &PostgresService{userRepo: repository}
+func NewPostgresService(repository UserRepository) *UserService {
+	return &UserService{userRepo: repository}
 }
 
-func (s *PostgresService) CreateUser(ctx context.Context, name string, age int) (int64, error) {
+func (s *UserService) CreateUser(ctx context.Context, name string, age int) (int64, error) {
 
 	if strings.TrimSpace(name) == "" {
 		return 0, &ValidationError{Field: "Name", Message: "name не может быть пустым"}

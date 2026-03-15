@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"firstprogram/app"
 	"firstprogram/cache"
 	"firstprogram/config"
 	"firstprogram/database"
 	"firstprogram/repositories"
+	"firstprogram/router"
 	"firstprogram/services"
 	"fmt"
 	"log"
@@ -15,7 +15,6 @@ import (
 
 // @title        MyService API
 // @version      1.0
-// @description  HTTP-сервис с Redis, HMAC и PostgreSQL
 // @host         localhost:8080
 // @BasePath     /
 func main() {
@@ -48,12 +47,12 @@ func main() {
 
 	pgService := services.NewPostgresService(userRepo)
 	redisService := services.NewRedisService(redisCache)
-	application := app.New(pgService, redisService)
+	router := router.New(pgService, redisService)
 
-	router := application.SetupRoutes()
+	httpHandler := router.SetupRoutes()
+
 	fmt.Printf("Запуск http сервера на порту %s", cfg.ServerPort)
-
-	err = http.ListenAndServe(":"+cfg.ServerPort, router)
+	err = http.ListenAndServe(":"+cfg.ServerPort, httpHandler)
 	if err != nil {
 		log.Fatal("Не удалось запустить сервер: ", err)
 	}
