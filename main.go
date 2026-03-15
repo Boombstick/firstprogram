@@ -11,6 +11,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // @title        MyService API
@@ -51,9 +56,29 @@ func main() {
 
 	httpHandler := router.SetupRoutes()
 
-	fmt.Printf("Запуск http сервера на порту %s", cfg.ServerPort)
-	err = http.ListenAndServe(":"+cfg.ServerPort, httpHandler)
-	if err != nil {
-		log.Fatal("Не удалось запустить сервер: ", err)
+	server := &http.Server{
+		Addr:    ":" + cfg.ServerPort,
+		Handler: httpHandler,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		fmt.Printf("Запуск http сервера на порту %s", cfg.ServerPort)
+		return server.ListenAndServe()
+	})
+
+	g.Go(func() error {
+		<-gCtx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return server.Shutdown(shutdownCtx)
+	})
+
+	if err := g.Wait(); err != nil {
+		fmt.Printf("exit reason: %s \n", err)
 	}
 }
